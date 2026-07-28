@@ -130,15 +130,16 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .btn-next:hover{transform:translateY(-1px)}
 .done-hint{font-size:.72rem;color:var(--muted);margin-top:-4px}
 
-/* ── HIDDEN PRINTABLE TEMPLATE FOR PERFECT HIGH-RES CYRILLIC PDF ── */
+/* ── PRINTABLE TEMPLATE FOR PERFECT HIGH-RES CYRILLIC PDF ── */
 #pdfTemplateWrapper {
   position: fixed;
   top: 0;
   left: 0;
   width: 794px;
   z-index: -9999;
-  opacity: 0.01;
+  opacity: 0;
   pointer-events: none;
+  background: #ffffff;
 }
 .pdf-printable {
   width: 794px; /* A4 width at 96 DPI */
@@ -662,7 +663,7 @@ async function submitSign() {
     day:'2-digit',month:'2-digit',year:'numeric',
     hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' (MSK)';
 
-  // 1. Prepare data for printable HTML and wait for signature image to load
+  // 1. Prepare data for printable HTML template
   document.getElementById('pdfSignerName').textContent = name;
   document.getElementById('pdfSignerEmail').textContent = email;
   document.getElementById('pdfStampName').textContent = name;
@@ -670,21 +671,24 @@ async function submitSign() {
   document.getElementById('pdfStampDate').textContent = dateStr;
   document.getElementById('pdfStampId').textContent = signId;
 
+  // Get signature data URL
   const sigDataUrl = canvas.toDataURL('image/png');
   const stampImg = document.getElementById('pdfStampImg');
 
+  // Load signature image into DOM <img>
   await new Promise((resolve) => {
-    if (stampImg.complete && stampImg.src === sigDataUrl) {
-      resolve();
-    } else {
-      stampImg.onload = resolve;
-      stampImg.onerror = resolve;
-      stampImg.src = sigDataUrl;
-    }
+    stampImg.onload = resolve;
+    stampImg.onerror = resolve;
+    stampImg.src = sigDataUrl;
   });
 
-  // Wait 150ms for browser layout repaint
-  await new Promise(r => setTimeout(r, 150));
+  // Temporarily bring template on screen for html2canvas rendering
+  const wrapper = document.getElementById('pdfTemplateWrapper');
+  wrapper.style.opacity = '1';
+  wrapper.style.zIndex = '99999';
+
+  // Wait 200ms for browser layout repaint
+  await new Promise(r => setTimeout(r, 200));
 
   generatedFileName = 'MindEcho_NDA_' + name.replace(/\s+/g,'_') + '_' + signId + '.pdf';
 
@@ -692,14 +696,18 @@ async function submitSign() {
     // 2. Render printable HTML element to high-res Canvas
     const element = document.getElementById('pdfPrintable');
     const canvasObj = await html2canvas(element, {
-      scale: 2, // High resolution (crisp text & colors)
+      scale: 1.6, // Optimal resolution & speed
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff'
     });
 
+    // Hide template wrapper back
+    wrapper.style.opacity = '0';
+    wrapper.style.zIndex = '-9999';
+
     // 3. Create PDF with jsPDF from image
-    const imgData = canvasObj.toDataURL('image/jpeg', 0.95);
+    const imgData = canvasObj.toDataURL('image/jpeg', 0.90);
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgProps = pdf.getImageProperties(imgData);
@@ -717,33 +725,36 @@ async function submitSign() {
     // Convert PDF to Base64 for Google Apps Script
     const pdfBase64 = pdf.output('datauristring').split(',')[1];
 
-    // Send PDF to Google Apps Script Endpoint (Saves to Drive & Emails PDF Attachment)
-    document.getElementById('btnTxt').textContent = 'Отправка документа на email...';
+    // 4. Send PDF to Google Apps Script Endpoint (Saves to Drive & Emails PDF Attachment)
+    document.getElementById('btnTxt').textContent = 'Отправка на Google Диск и email...';
     
     const gasUrl = 'https://script.google.com/macros/s/AKfycbziOn0HCDEMob1kzHkwJkj__zOFNnFHRL-iA7UFByz0YRS2JXouAcCXz1XdiGP240o1VA/exec';
 
-    fetch(gasUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        signerName:  name,
-        signerEmail: email,
-        dateStr:     dateStr,
-        signId:      signId,
-        fileName:    generatedFileName,
-        pdfBase64:   pdfBase64
-      })
-    })
-    .then(() => {
-      goStep3(name);
-    })
-    .catch(err => {
-      console.error('GAS Endpoint Error:', err);
-      goStep3(name);
+    const payload = JSON.stringify({
+      signerName:  name,
+      signerEmail: email,
+      dateStr:     dateStr,
+      signId:      signId,
+      fileName:    generatedFileName,
+      pdfBase64:   pdfBase64
     });
 
+    try {
+      await fetch(gasUrl, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body: payload
+      });
+    } catch (gasErr) {
+      console.error('GAS POST Error:', gasErr);
+    }
+
+    goStep3(name);
+
   } catch(pdfErr) {
+    wrapper.style.opacity = '0';
+    wrapper.style.zIndex = '-9999';
     console.error('PDF Generation Error:', pdfErr);
     goStep3(name);
   }
