@@ -6,24 +6,38 @@
 <meta name="description" content="MindEcho AI — Non-Disclosure Agreement / Соглашение о неразглашении">
 <title>MindEcho AI — NDA Signature</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<!-- EmailJS -->
+
+<!-- EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<!-- jsPDF — generates signed PDF in browser -->
+<!-- html2canvas + jsPDF for PERFECT Cyrillic PDF rendering -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-:root{
-  --bg:#0d0f14;--surface:#161923;--surface2:#1e2330;--border:#2a3040;
-  --accent:#6c8eff;--accent2:#a78bfa;--success:#34d399;--danger:#f87171;
-  --warn:#fbbf24;--text:#e8ecf4;--muted:#8892a4;--radius:14px;
+:root {
+  --bg:       #0d0f14;
+  --surface:  #161923;
+  --surface2: #1e2330;
+  --border:   #2a3040;
+  --accent:   #6c8eff;
+  --accent2:  #a78bfa;
+  --success:  #34d399;
+  --danger:   #f87171;
+  --warn:     #fbbf24;
+  --text:     #e8ecf4;
+  --muted:    #8892a4;
+  --radius:   14px;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{scroll-behavior:smooth}
 body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;overscroll-behavior:none}
 
+/* ── PROGRESS BAR ── */
 #progressBar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease;z-index:200;width:0%}
 
+/* ── HEADER ── */
 .header{position:fixed;top:3px;left:0;right:0;z-index:150;
-  background:rgba(13,15,20,.94);backdrop-filter:blur(16px);
+  background:rgba(13,15,20,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);padding:11px 20px;
   display:flex;align-items:center;gap:12px}
 .logo{width:38px;height:38px;border-radius:11px;flex-shrink:0;
@@ -38,7 +52,10 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .pill.active{border-color:var(--accent);color:var(--accent);background:rgba(108,142,255,.12)}
 .pill.done{border-color:var(--success);background:var(--success);color:#fff}
 
+/* ── WRAPPER ── */
 .wrap{padding-top:68px;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── SCREENS ── */
 .screen{display:none;flex-direction:column;flex:1;padding:18px;max-width:680px;margin:0 auto;width:100%}
 .screen.on{display:flex}
 
@@ -112,6 +129,150 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 .btn-next{padding:14px 20px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 6px 20px rgba(108,142,255,.3);transition:.2s}
 .btn-next:hover{transform:translateY(-1px)}
 .done-hint{font-size:.72rem;color:var(--muted);margin-top:-4px}
+
+/* ── HIDDEN PRINTABLE TEMPLATE FOR PERFECT HIGH-RES CYRILLIC PDF ── */
+#pdfTemplateWrapper {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+.pdf-printable {
+  width: 794px; /* A4 width at 96 DPI */
+  background: #ffffff;
+  color: #1e293b;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding: 40px 48px;
+  box-sizing: border-box;
+}
+.pdf-header {
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  padding: 20px 24px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+.pdf-header h1 { font-size: 22px; font-weight: 700; margin: 0; }
+.pdf-header p { font-size: 13px; margin: 4px 0 0; opacity: 0.9; }
+.pdf-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.pdf-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #64748b;
+  margin-bottom: 20px;
+}
+.pdf-divider {
+  border-top: 2px solid #e2e8f0;
+  margin: 16px 0;
+}
+.pdf-parties {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.pdf-parties h4 {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #2563eb;
+  margin: 0 0 4px;
+  letter-spacing: 0.5px;
+}
+.pdf-parties p { margin: 0 0 10px; color: #334155; }
+.pdf-parties p:last-child { margin: 0; }
+
+.pdf-body {
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: #334155;
+  margin-bottom: 20px;
+}
+.pdf-body h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 16px 0 6px;
+}
+.pdf-body p { margin-bottom: 8px; }
+.pdf-body ul { margin: 4px 0 8px 20px; }
+
+.pdf-stamp-box {
+  background: #f0fdf4;
+  border: 2px solid #22c55e;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.pdf-stamp-info {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.pdf-stamp-info h3 {
+  color: #166534;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.pdf-stamp-row {
+  display: flex;
+  margin-bottom: 4px;
+}
+.pdf-stamp-label {
+  width: 170px;
+  color: #64748b;
+  font-weight: 500;
+}
+.pdf-stamp-val {
+  color: #0f172a;
+  font-weight: 600;
+}
+.pdf-stamp-sig {
+  width: 200px;
+  text-align: center;
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+.pdf-stamp-sig img {
+  max-width: 190px;
+  max-height: 80px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 4px;
+}
+.pdf-stamp-sig p {
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 4px;
+}
+.pdf-footer {
+  margin-top: 30px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+  font-size: 11px;
+  color: #94a3b8;
+}
 </style>
 </head>
 <body>
@@ -262,7 +423,7 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
 
     <button class="btn-main" id="btnSign" onclick="submitSign()">
       <div class="spin" id="spinner"></div>
-      <span id="btnTxt">✅ Подписать и получить документ</span>
+      <span id="btnTxt">✅ Подписать и создать PDF</span>
     </button>
     <button class="btn-ghost" onclick="goStep1()">← Назад к документу / Back</button>
   </div>
@@ -274,23 +435,96 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-s
       <div class="done-title">Подписано! / Signed!</div>
       <div class="done-name" id="dName"></div>
       <div class="done-sub">
-        Подписанный документ NDA сохранён.<br>
-        Копия отправлена на <b>get777903@gmail.com</b>.<br><br>
-        Скачайте ваш экземпляр подписанного NDA:
+        Подписанный документ NDA успешно сформирован.<br>
+        PDF сохранен на вашем устройстве.<br><br>
+        Уведомление отправлено на <b>get777903@gmail.com</b>.
       </div>
       <div class="action-btns">
         <button class="btn-download" id="btnDownload" onclick="downloadPDF()">
-          📄 Скачать подписанный NDA (PDF)
+          📄 Повторно скачать PDF
         </button>
         <a href="https://docs.google.com/document/d/15ZGpk381gG30U1GciKvGXhSg_6rN1sye2FsVVmrjgMU/edit?usp=sharing"
            target="_blank" class="btn-next">
           🚀 Открыть документ MindEcho AI
         </a>
       </div>
-      <div class="done-hint">Your signed NDA copy is ready to download</div>
+      <div class="done-hint">Open MindEcho AI document</div>
     </div>
   </div>
 
+</div>
+
+<!-- ═══ HIDDEN PRINTABLE ELEMENT FOR HTML2CANVAS ═══ -->
+<div id="pdfTemplateWrapper">
+  <div class="pdf-printable" id="pdfPrintable">
+    <div class="pdf-header">
+      <div>
+        <h1>MindEcho AI</h1>
+        <p>Non-Disclosure Agreement & Terms of Service</p>
+      </div>
+      <div style="font-size:32px">🧠</div>
+    </div>
+
+    <div class="pdf-title">СОГЛАШЕНИЕ О НЕРАЗГЛАШЕНИИ (NDA)</div>
+    <div class="pdf-subtitle">Non-Disclosure Agreement · MindEcho AI Ecosystem</div>
+
+    <div class="pdf-parties">
+      <h4>Раскрывающая сторона / Disclosing Party:</h4>
+      <p><b>Konstantyn Shlomovich</b>, Passport No. 35260680, developer and sole rights holder of the MindEcho AI project.</p>
+      <h4>Принимающая сторона / Receiving Party:</h4>
+      <p><b><span id="pdfSignerName">Иванов Иван</span></b> (<span id="pdfSignerEmail">example@gmail.com</span>). Идентифицирован в электронной форме при подписании.</p>
+    </div>
+
+    <div class="pdf-body">
+      <h3>1. Предмет Соглашения / Subject</h3>
+      <p>Раскрывающая сторона передает, а Принимающая сторона принимает Конфиденциальную информацию исключительно в целях оценки, разработки, тестирования или инвестирования в рамках проекта MindEcho AI.</p>
+      <p><b>MindEcho AI</b> — технологическая экосистема и AI-платформа для психологической фасилитации, гармонизации семейных отношений и развития эмоционального интеллекта у детей. Включает алгоритмы рекомендаций, медитации и систему синтеза речи родителей.</p>
+
+      <h3>2. Конфиденциальная информация / Confidential Information</h3>
+      <p>Исходный код, архитектура, алгоритмы и промпты AI-моделей, система клонирования голоса, голосовые данные, бизнес-планы, финансовые модели, маркетинговые стратегии, списки инвесторов и дизайн интерфейсов.</p>
+
+      <h3>3. Обязательства / Obligations & Duration</h3>
+      <p>Принимающая сторона обязуется сохранять Конфиденциальную информацию в тайне, не создавать конкурирующие продукты и не передавать данные третьим лицам. Соглашение действует <b>4 (четыре) года</b> с момента раскрытия.</p>
+
+      <h3>4. Пользовательское Соглашение / Terms of Service</h3>
+      <p>MindEcho AI предоставляется в образовательных целях, не является медицинской помощью. Konstantyn Shlomovich не несет ответственности за косвенный ущерб. Действует бессрочно.</p>
+    </div>
+
+    <!-- OFFICIAL STAMP BOX -->
+    <div class="pdf-stamp-box">
+      <div class="pdf-stamp-info">
+        <h3>✅  ШТАМП ПРОСТОЙ ЭЛЕКТРОННОЙ ПОДПИСИ (ПЭП)</h3>
+        <div class="pdf-stamp-row">
+          <div class="pdf-stamp-label">Подписант / Signer:</div>
+          <div class="pdf-stamp-val" id="pdfStampName">Иванов Иван</div>
+        </div>
+        <div class="pdf-stamp-row">
+          <div class="pdf-stamp-label">Email:</div>
+          <div class="pdf-stamp-val" id="pdfStampEmail">example@gmail.com</div>
+        </div>
+        <div class="pdf-stamp-row">
+          <div class="pdf-stamp-label">Дата и время / Date:</div>
+          <div class="pdf-stamp-val" id="pdfStampDate">28.07.2026, 22:45:00 (MSK)</div>
+        </div>
+        <div class="pdf-stamp-row">
+          <div class="pdf-stamp-label">ID транзакции / TX ID:</div>
+          <div class="pdf-stamp-val" id="pdfStampId" style="font-family:monospace;color:#2563eb">MEA-X9K2L8P</div>
+        </div>
+        <div class="pdf-stamp-row">
+          <div class="pdf-stamp-label">Статус / Status:</div>
+          <div class="pdf-stamp-val" style="color:#166534">ПОДПИСАНО И ПОДТВЕРЖДЕНО (SIGNED)</div>
+        </div>
+      </div>
+      <div class="pdf-stamp-sig">
+        <img id="pdfStampImg" src="" alt="Signature">
+        <p>Графическая подпись / Signature</p>
+      </div>
+    </div>
+
+    <div class="pdf-footer">
+      Настоящий документ подписан в электронной форме (ПЭП) в соответствии с международными нормами. · MindEcho AI © 2026 · Konstantyn Shlomovich · Passport No. 35260680
+    </div>
+  </div>
 </div>
 
 <script>
@@ -304,7 +538,8 @@ let signed   = false;
 let scrolled = false;
 let drawing  = false;
 let lang     = 'ru';
-let pdfDoc   = null; // holds generated PDF for download
+let generatedPdfBlob = null;
+let generatedFileName = 'MindEcho_NDA_Signed.pdf';
 
 // ─── Progress ───
 function setProgress(p){ document.getElementById('progressBar').style.width=p+'%'; }
@@ -392,155 +627,18 @@ canvas.addEventListener('touchend',   ()=>drawing=false);
 function clearSig(){ ctx.clearRect(0,0,canvas.width,canvas.height); signed=false; }
 window.addEventListener('resize',()=>{ if(document.getElementById('s2').classList.contains('on')) initCanvas(); });
 
-// ─── Generate signed PDF with jsPDF ───
-function generatePDF(name, email, dateStr, signId, sigDataUrl) {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
-  const W = 210, M = 20;
-  let y = 20;
-
-  // Header gradient bar (simulated with rect)
-  doc.setFillColor(108, 142, 255);
-  doc.rect(0, 0, W, 18, 'F');
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(13);
-  doc.setFont('helvetica','bold');
-  doc.text('MindEcho AI', M, 12);
-  doc.setFontSize(9);
-  doc.setFont('helvetica','normal');
-  doc.text('Non-Disclosure Agreement  |  Соглашение о неразглашении', M+42, 12);
-  y = 30;
-
-  // Title
-  doc.setTextColor(15,23,42);
-  doc.setFontSize(15);
-  doc.setFont('helvetica','bold');
-  doc.text('NON-DISCLOSURE AGREEMENT (NDA)', W/2, y, {align:'center'});
-  y += 6;
-  doc.setFontSize(10);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(100,116,139);
-  doc.text('Соглашение о неразглашении — MindEcho AI', W/2, y, {align:'center'});
-  y += 12;
-
-  // Divider
-  doc.setDrawColor(226,232,240);
-  doc.line(M, y, W-M, y);
-  y += 8;
-
-  // Parties block
-  doc.setFillColor(241,245,249);
-  doc.roundedRect(M, y, W-M*2, 28, 3, 3, 'F');
-  doc.setTextColor(15,23,42);
-  doc.setFontSize(9);
-  doc.setFont('helvetica','bold');
-  doc.text('DISCLOSING PARTY / РАСКРЫВАЮЩАЯ СТОРОНА:', M+4, y+6);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(71,85,105);
-  doc.text('Konstantyn Shlomovich, Passport No. 35260680, developer and sole rights holder of MindEcho AI.', M+4, y+12, {maxWidth: W-M*2-8});
-  doc.setFont('helvetica','bold');
-  doc.setTextColor(15,23,42);
-  doc.text('RECEIVING PARTY / ПРИНИМАЮЩАЯ СТОРОНА:', M+4, y+20);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(71,85,105);
-  doc.text('Identified electronically upon signing. Identity confirmed by Full Name, Email, Timestamp, and Signature.', M+4, y+26, {maxWidth: W-M*2-8});
-  y += 34;
-
-  // NDA Summary sections
-  const sections = [
-    ['1. Subject / Предмет', 'MindEcho AI is a technological ecosystem and AI platform for psychological facilitation, family relationship harmonization, and emotional intelligence development in children. Confidential Information is shared solely for evaluation, development, testing, or investment purposes.'],
-    ['2. Confidentiality / Конфиденциальность', 'The Receiving Party undertakes to keep all Confidential Information in strict confidence, not to use it to create competing products, and not to disclose it to third parties without prior written consent.'],
-    ['3. Duration / Срок', 'This Agreement is valid for 4 (four) years from the date of disclosure of Confidential Information. Terms of Service are effective indefinitely.'],
-    ['4. Liability / Ответственность', 'Breach of this Agreement entails full liability under applicable international law. The Receiving Party shall compensate all actual losses incurred by the Disclosing Party.'],
-  ];
-  doc.setFontSize(9);
-  for (const [title, text] of sections) {
-    doc.setFont('helvetica','bold');
-    doc.setTextColor(108,142,255);
-    doc.text(title, M, y);
-    y += 5;
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(71,85,105);
-    const lines = doc.splitTextToSize(text, W-M*2);
-    doc.text(lines, M, y);
-    y += lines.length * 4.5 + 4;
-  }
-
-  y += 4;
-  // Divider
-  doc.setDrawColor(226,232,240);
-  doc.line(M, y, W-M, y);
-  y += 8;
-
-  // ── SIGNATURE STAMP BLOCK ──
-  doc.setFillColor(240,253,244);
-  doc.setDrawColor(187,247,208);
-  doc.roundedRect(M, y, W-M*2, 62, 4, 4, 'FD');
-
-  doc.setTextColor(22,101,52);
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(10);
-  doc.text('✅  ELECTRONIC SIGNATURE STAMP / ШТАМП ЭЛЕКТРОННОЙ ПОДПИСИ (ПЭП)', M+4, y+8);
-
-  doc.setFont('helvetica','normal');
-  doc.setFontSize(9);
-  doc.setTextColor(15,23,42);
-  const stampData = [
-    ['Подписант / Signer', name],
-    ['Email', email],
-    ['Дата и время / Date & Time', dateStr],
-    ['ID транзакции / Transaction ID', signId],
-    ['Документ / Document', 'MindEcho AI NDA — Non-Disclosure Agreement'],
-  ];
-  let sy = y + 15;
-  for (const [label, value] of stampData) {
-    doc.setTextColor(100,116,139);
-    doc.text(label + ':', M+4, sy);
-    doc.setTextColor(15,23,42);
-    doc.setFont('helvetica','bold');
-    doc.text(value, M+58, sy);
-    doc.setFont('helvetica','normal');
-    sy += 6;
-  }
-
-  // Signature image — placed in the stamp block on the right
-  try {
-    doc.addImage(sigDataUrl, 'JPEG', W-M-52, y+10, 48, 22);
-    doc.setTextColor(100,116,139);
-    doc.setFontSize(7);
-    doc.text('Графическая подпись / Handwritten signature', W-M-52, y+35);
-  } catch(e) { /* ignore image error */ }
-
-  y += 68;
-
-  // Legal note
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica','italic');
-  doc.setTextColor(100,116,139);
-  const legalText = 'This document was signed electronically. The combination of Full Name, Email, Timestamp, Transaction ID and handwritten graphic signature constitutes a valid Simple Electronic Signature (ПЭП) under applicable law. | Настоящий документ подписан в электронной форме и имеет полную юридическую силу.';
-  const legalLines = doc.splitTextToSize(legalText, W-M*2);
-  doc.text(legalLines, M, y);
-
-  // Footer
-  doc.setFillColor(248,250,252);
-  doc.rect(0, 287, W, 10, 'F');
-  doc.setFontSize(7);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(148,163,184);
-  doc.text('MindEcho AI © 2026 · Konstantyn Shlomovich · Passport No. 35260680', W/2, 293, {align:'center'});
-
-  return doc;
-}
-
 // ─── Download PDF ───
 function downloadPDF() {
-  if (pdfDoc) {
-    pdfDoc.save('MindEcho_NDA_Signed.pdf');
+  if (generatedPdfBlob) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(generatedPdfBlob);
+    link.download = generatedFileName;
+    link.click();
   }
 }
 
-// ─── Submit ───
-function submitSign() {
+// ─── Submit & Generate PDF via html2canvas ───
+async function submitSign() {
   const name  = document.getElementById('fName').value.trim();
   const email = document.getElementById('fEmail').value.trim();
 
@@ -551,7 +649,7 @@ function submitSign() {
   const btn = document.getElementById('btnSign');
   btn.disabled = true;
   document.getElementById('spinner').style.display='block';
-  document.getElementById('btnTxt').textContent='Создание документа...';
+  document.getElementById('btnTxt').textContent='Формирование PDF...';
   document.getElementById('statusBox').style.display='none';
 
   const now    = new Date();
@@ -560,37 +658,63 @@ function submitSign() {
     day:'2-digit',month:'2-digit',year:'numeric',
     hour:'2-digit',minute:'2-digit',second:'2-digit'}) + ' (MSK)';
 
-  // Compress signature for PDF
-  const tmp = document.createElement('canvas');
-  tmp.width=380; tmp.height=130;
-  const tc=tmp.getContext('2d');
-  tc.fillStyle='#ffffff'; tc.fillRect(0,0,380,130);
-  tc.drawImage(canvas,0,0,380,130);
-  const sigDataUrl = tmp.toDataURL('image/jpeg',0.75);
+  // 1. Prepare data for printable HTML
+  document.getElementById('pdfSignerName').textContent = name;
+  document.getElementById('pdfSignerEmail').textContent = email;
+  document.getElementById('pdfStampName').textContent = name;
+  document.getElementById('pdfStampEmail').textContent = email;
+  document.getElementById('pdfStampDate').textContent = dateStr;
+  document.getElementById('pdfStampId').textContent = signId;
+  document.getElementById('pdfStampImg').src = canvas.toDataURL('image/png');
 
-  // 1. Generate PDF with signature ON the document
+  generatedFileName = 'MindEcho_NDA_' + name.replace(/\s+/g,'_') + '_' + signId + '.pdf';
+
   try {
-    pdfDoc = generatePDF(name, email, dateStr, signId, sigDataUrl);
-    // Auto-download immediately
-    pdfDoc.save('MindEcho_NDA_Signed.pdf');
+    // 2. Render printable HTML element to high-res Canvas
+    const element = document.getElementById('pdfPrintable');
+    const canvasObj = await html2canvas(element, {
+      scale: 2, // High resolution (crisp text & colors)
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+
+    // 3. Create PDF with jsPDF from image
+    const imgData = canvasObj.toDataURL('image/jpeg', 0.95);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+    pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+    
+    // Save blob for local download
+    generatedPdfBlob = pdf.output('blob');
+
+    // Auto-trigger download on user's device
+    pdf.save(generatedFileName);
+
   } catch(pdfErr) {
-    console.error('PDF error:', pdfErr);
+    console.error('PDF Generation Error:', pdfErr);
   }
 
-  // 2. Send plain-text email notification (no image = no HTML issues)
+  // 4. Send Email Notification via EmailJS (Clean text parameters, no broken HTML/attachments)
+  document.getElementById('btnTxt').textContent='Отправка уведомления...';
+
   const params = {
     signer_name:  name,
     signer_email: email,
     sign_date:    dateStr,
-    sign_id:      signId,
-    // signature_image is NOT sent — avoids all HTML/base64 rendering issues
+    sign_id:      signId
   };
 
   emailjs.send(EJSVC, EJSTPL, params)
-    .then(()=> goStep3(name))
+    .then(() => {
+      goStep3(name);
+    })
     .catch(err => {
-      console.error('EmailJS:', err);
-      // PDF was created — proceed to success anyway
+      console.error('Email Notification Error:', err);
+      // Proceed anyway since PDF was created and downloaded
       goStep3(name);
     });
 }
