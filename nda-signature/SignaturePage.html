@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MindEcho AI — NDA</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #0d0f14;
+  --surface:  #161923;
+  --surface2: #1e2330;
+  --border:   #2a3040;
+  --accent:   #6c8eff;
+  --accent2:  #a78bfa;
+  --success:  #34d399;
+  --danger:   #f87171;
+  --text:     #e8ecf4;
+  --muted:    #8892a4;
+  --radius:   14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;overscroll-behavior:none}
+
+/* ── PROGRESS BAR ── */
+.progress-bar-wrap{position:fixed;top:0;left:0;right:0;z-index:100;height:3px;background:var(--border)}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s ease}
+
+/* ── HEADER ── */
+.top-header{position:fixed;top:3px;left:0;right:0;z-index:99;
+  background:rgba(13,15,20,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:12px 20px;
+  display:flex;align-items:center;gap:12px}
+.logo-icon{width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.logo-text h1{font-size:1rem;font-weight:700;letter-spacing:-.02em}
+.logo-text p{font-size:.72rem;color:var(--muted)}
+
+.step-pills{display:flex;gap:8px;margin-left:auto}
+.step-pill{padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:600;
+  border:1px solid var(--border);color:var(--muted);transition:.3s}
+.step-pill.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.step-pill.done{background:var(--success);border-color:var(--success);color:#fff}
+
+/* ── MAIN WRAPPER ── */
+.main{padding-top:66px;min-height:100vh;display:flex;flex-direction:column}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;flex:1;padding:20px;max-width:700px;margin:0 auto;width:100%}
+.screen.active{display:flex}
+
+/* ── NDA READER ── */
+.lang-tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:10px;margin-bottom:16px;border:1px solid var(--border)}
+.lang-tab{flex:1;padding:8px;text-align:center;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--muted);transition:.25s;border:none;background:none}
+.lang-tab.active{background:var(--accent);color:#fff}
+
+.nda-scroll{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  overflow-y:auto;padding:20px;font-size:.88rem;line-height:1.75;color:#c8d0e0;max-height:52vh;position:relative}
+.nda-scroll h2{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:12px;text-align:center;letter-spacing:.03em}
+.nda-scroll h3{font-size:.9rem;font-weight:600;color:var(--accent);margin:16px 0 6px}
+.nda-scroll p{margin-bottom:10px}
+.nda-scroll ul{margin:6px 0 10px 18px}
+.nda-scroll li{margin-bottom:4px}
+.nda-scroll .highlight-box{background:var(--surface2);border-left:3px solid var(--accent2);
+  padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-style:italic}
+.nda-scroll .party-block{background:rgba(108,142,255,.07);border:1px solid rgba(108,142,255,.2);
+  border-radius:10px;padding:14px;margin:10px 0}
+
+.scroll-hint{text-align:center;padding:10px;font-size:.75rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:6px}
+.scroll-hint.hidden{display:none}
+.scroll-check{margin:14px 0;display:flex;align-items:flex-start;gap:10px;padding:14px;
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer}
+.scroll-check input{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;margin-top:1px;cursor:pointer}
+.scroll-check label{font-size:.82rem;line-height:1.5;color:var(--muted);cursor:pointer}
+.scroll-check label b{color:var(--text)}
+
+/* ── FORM ── */
+.section-title{font-size:1.1rem;font-weight:700;margin-bottom:4px}
+.section-sub{font-size:.82rem;color:var(--muted);margin-bottom:20px}
+.form-row{display:grid;gap:14px;margin-bottom:14px}
+@media(min-width:560px){.form-row.two{grid-template-columns:1fr 1fr}}
+.field label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.04em;text-transform:uppercase}
+.field input{width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;color:var(--text);font-size:.95rem;outline:none;transition:.2s;font-family:inherit}
+.field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,142,255,.15)}
+.field input::placeholder{color:var(--muted)}
+
+/* ── CANVAS ── */
+.canvas-wrap{border:1.5px dashed var(--border);border-radius:12px;overflow:hidden;
+  background:#ffffff;touch-action:none;user-select:none;position:relative;margin-bottom:8px}
+#signatureCanvas{display:block;width:100%;height:160px;cursor:crosshair}
+.canvas-footer{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.btn-clear{background:none;border:none;color:var(--danger);font-size:.82rem;font-weight:600;cursor:pointer;padding:4px}
+.canvas-label{font-size:.78rem;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px}
+
+/* ── BUTTONS ── */
+.btn-primary{width:100%;padding:15px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s;
+  letter-spacing:-.01em;box-shadow:0 8px 24px rgba(108,142,255,.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 32px rgba(108,142,255,.4)}
+.btn-primary:disabled{background:#2a3040;color:var(--muted);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-outline{width:100%;padding:13px;background:transparent;color:var(--accent);
+  border:1.5px solid var(--accent);border-radius:12px;font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:.2s;margin-top:12px}
+.btn-outline:hover{background:rgba(108,142,255,.1)}
+
+/* ── SPINNER ── */
+.spinner{width:20px;height:20px;border:3px solid rgba(255,255,255,.3);
+  border-radius:50%;border-top-color:#fff;animation:spin .8s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── STATUS ── */
+.status-box{display:none;padding:14px 16px;border-radius:10px;font-size:.88rem;text-align:center;margin-top:12px}
+.status-ok{background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.3);color:var(--success)}
+.status-err{background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.3);color:var(--danger)}
+
+/* ── SUCCESS SCREEN ── */
+.success-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:16px}
+.success-icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--success),#059669);
+  display:flex;align-items:center;justify-content:center;font-size:36px;animation:pop .5s ease}
+@keyframes pop{0%{transform:scale(0)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+.success-title{font-size:1.4rem;font-weight:700}
+.success-sub{font-size:.88rem;color:var(--muted);max-width:320px;line-height:1.6}
+.btn-next{padding:14px 32px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;
+  text-decoration:none;display:inline-block;margin-top:8px;
+  box-shadow:0 8px 24px rgba(108,142,255,.35)}
+
+/* ── SCROLLBAR ── */
+.nda-scroll::-webkit-scrollbar{width:5px}
+.nda-scroll::-webkit-scrollbar-track{background:transparent}
+.nda-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+</style>
+</head>
+<body>
+
+<div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:33%"></div></div>
+
+<div class="top-header">
+  <div class="logo-icon">🧠</div>
+  <div class="logo-text">
+    <h1>MindEcho AI</h1>
+    <p>Non-Disclosure Agreement</p>
+  </div>
+  <div class="step-pills">
+    <div class="step-pill active" id="pill1">1</div>
+    <div class="step-pill" id="pill2">2</div>
+    <div class="step-pill" id="pill3">3</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ══════════════════════════════════════
+       STEP 1: Read the NDA
+  ══════════════════════════════════════ -->
+  <div class="screen active" id="step1">
+    <div style="margin-bottom:16px">
+      <div class="section-title">Соглашение о неразглашении</div>
+      <div class="section-sub">Non-Disclosure Agreement • Прочтите документ перед подписанием</div>
+    </div>
+
+    <!-- Language Tabs -->
+    <div class="lang-tabs">
+      <button class="lang-tab active" id="tabRU" onclick="switchLang('ru')">🇷🇺 Русский</button>
+      <button class="lang-tab" id="tabEN" onclick="switchLang('en')">🇬🇧 English</button>
+    </div>
+
+    <!-- NDA Text Scroll Box -->
+    <div class="nda-scroll" id="ndaScroll">
+
+      <!-- ===== RUSSIAN VERSION ===== -->
+      <div id="langRU">
+        <h2>СОГЛАШЕНИЕ О НЕРАЗГЛАШЕНИИ (NDA)</h2>
+        <p style="text-align:center;color:var(--muted);font-size:.82rem">Дата: «__» ____________ 202__ г.</p>
+
+        <div class="party-block">
+          <h3>Раскрывающая сторона:</h3>
+          <p>Konstantyn Shlomovich, Паспорт No. 35260680, разработчик и единственный правообладатель проекта <b>MindEcho AI</b>.</p>
+          <h3 style="margin-top:12px">Принимающая сторона:</h3>
+          <p>Физическое или юридическое лицо, данные которого идентифицируются при подписании настоящего Соглашения (Full Name, email, IP-адрес, отметка времени).</p>
+        </div>
+
+        <h3>1. Предмет соглашения</h3>
+        <p>1.1. Раскрывающая сторона передает, а Принимающая сторона принимает Конфиденциальную информацию исключительно в целях оценки, разработки, тестирования, инвестирования или иного делового сотрудничества в рамках проекта MindEcho AI.</p>
+        <p>1.2. <b>MindEcho AI</b> — специализированная технологическая экосистема и AI-платформа для психологической фасилитации, гармонизации семейных отношений и развития эмоционального интеллекта у детей. Продукт включает:</p>
+        <ul>
+          <li>Алгоритмы генерации персональных рекомендаций по взаимодействию между родителями и детьми;</li>
+          <li>Модули медитативных и релаксационных практик;</li>
+          <li>Инструменты клонирования и синтеза речи (голоса родителей).</li>
+        </ul>
+
+        <h3>2. Конфиденциальная информация</h3>
+        <p>2.1. Под «Конфиденциальной информацией» понимаются любые сведения в устной, письменной или электронной форме, включая:</p>
+        <ul>
+          <li>Исходный код, архитектуру, алгоритмы и промпты AI-моделей;</li>
+          <li>Архитектуру системы клонирования и синтеза голоса и пользовательские голосовые данные;</li>
+          <li>Бизнес-планы, финансовые модели, маркетинговые стратегии, списки инвесторов и партнёров;</li>
+          <li>Дизайн интерфейсов, юридическую документацию и внутренние инструкции проекта MindEcho AI.</li>
+        </ul>
+
+        <h3>3. Обязательства принимающей стороны</h3>
+        <p>3.1. Сохранять Конфиденциальную информацию в строгой тайне и принимать все необходимые меры для её защиты от несанкционированного доступа.</p>
+        <p>3.2. Не использовать Конфиденциальную информацию для создания собственных аналогичных продуктов без письменного согласия Раскрывающей стороны.</p>
+        <p>3.3. Не копировать, не воспроизводить и не передавать Конфиденциальную информацию третьим лицам.</p>
+
+        <h3>4. Электронная подпись и идентификация</h3>
+        <p>4.1. Стороны признают, что настоящее Соглашение заключается в электронной форме и имеет полную юридическую силу (Простая Электронная Подпись — ПЭП).</p>
+        <p>4.2. Идентификация осуществляется по комбинации: ФИО + Email + IP-адрес + Timestamp + графическая подпись.</p>
+        <p>4.3. Акцепт Соглашения происходит путём проставления графической подписи в электронной форме и нажатия кнопки подтверждения.</p>
+
+        <h3>5. Ответственность и срок действия</h3>
+        <p>5.1. За нарушение условий Принимающая сторона несёт ответственность по международному законодательству и возмещает все причинённые убытки в их фактическом размере.</p>
+        <p>5.2. Настоящее Соглашение вступает в силу с момента акцепта и действует в течение <b>4 (четырёх) лет</b> с момента раскрытия Конфиденциальной информации.</p>
+
+        <div class="highlight-box">
+          Записанные в электронный реестр ФИО, email, IP-адрес, дата и время (Timestamp) и подтверждение согласия образуют полноценный цифровой след, имеющий силу Простой Электронной Подписи.
+        </div>
+
+        <div class="party-block">
+          <h3>Также входит: Пользовательское Соглашение (Terms of Service)</h3>
+          <p>Сервис MindEcho AI предоставляется в информационных, образовательных и фасилитационных целях. Сервис <b>не является</b> медицинской, психологической или психотерапевтической помощью, не ставит диагнозов и не заменяет консультаций специалистов.</p>
+          <p style="margin-top:8px">Пользователь принимает на себя полную ответственность за применение советов, медитаций и сгенерированных материалов. Использование биометрических голосовых данных допускается при наличии законных прав на них.</p>
+          <p style="margin-top:8px">В максимальной степени, допускаемой законом, <b>Konstantyn Shlomovich и MindEcho AI</b> не несут ответственности за прямые, косвенные или случайные убытки, психологический дискомфорт или конфликтные ситуации.</p>
+          <p style="margin-top:8px">Настоящее Соглашение вступает в силу с момента акцепта и действует <b>бессрочно</b> на протяжении всего периода использования Сервиса.</p>
+        </div>
+      </div>
+
+      <!-- ===== ENGLISH VERSION ===== -->
+      <div id="langEN" style="display:none">
+        <h2>NON-DISCLOSURE AGREEMENT (NDA)</h2>
+        <p style="text-align:center;color:var(--muted);font-size:.82rem">Date: "__" ____________ 202__</p>
+
+        <div class="party-block">
+          <h3>Disclosing Party:</h3>
+          <p>Konstantyn Shlomovich, Passport No. 35260680, developer and sole rights holder of <b>MindEcho AI</b>.</p>
+          <h3 style="margin-top:12px">Receiving Party:</h3>
+          <p>An individual or legal entity whose identity is established upon signing this Agreement (Full Name, email address, IP address, and timestamp).</p>
+        </div>
+
+        <h3>1. Subject of the Agreement</h3>
+        <p>1.1. The Disclosing Party transfers, and the Receiving Party accepts, Confidential Information solely for evaluation, development, testing, investment, or other business collaboration within MindEcho AI.</p>
+        <p>1.2. <b>MindEcho AI</b> is a technological ecosystem and AI platform designed for psychological facilitation, family relationship harmonization, and emotional intelligence development in children. Features include:</p>
+        <ul>
+          <li>AI-generated personalized recommendations on parent-child interactions;</li>
+          <li>Customized meditation and relaxation modules;</li>
+          <li>Voice cloning and speech synthesis tools (parents' voices).</li>
+        </ul>
+
+        <h3>2. Confidential Information</h3>
+        <p>2.1. "Confidential Information" means any information in oral, written, or electronic form, including:</p>
+        <ul>
+          <li>Source code, architecture, algorithms, and AI model prompts;</li>
+          <li>Voice cloning system architecture and user voice data;</li>
+          <li>Business plans, financial models, marketing strategies, investor and partner lists;</li>
+          <li>UI design, legal documentation, and internal MindEcho AI project instructions.</li>
+        </ul>
+
+        <h3>3. Obligations of the Receiving Party</h3>
+        <p>3.1. Keep Confidential Information in strict confidence and take all measures to protect it from unauthorized access.</p>
+        <p>3.2. Not use Confidential Information to create similar products without prior written consent of the Disclosing Party.</p>
+        <p>3.3. Not copy, reproduce, or transfer Confidential Information to third parties except as required by law.</p>
+
+        <h3>4. Electronic Signature & Identification</h3>
+        <p>4.1. The Parties acknowledge this Agreement is executed in electronic form and has full legal force (Simple Electronic Signature).</p>
+        <p>4.2. Identification is based on: Full Name + Email + IP address + Timestamp + handwritten electronic signature.</p>
+        <p>4.3. Acceptance occurs by placing a graphic signature in the electronic form and clicking the confirmation button.</p>
+
+        <h3>5. Liability & Duration</h3>
+        <p>5.1. For breach, the Receiving Party is liable under applicable international law and shall compensate all actual losses.</p>
+        <p>5.2. This Agreement enters into force upon acceptance and remains in effect for <b>4 (four) years</b> from the date of disclosure.</p>
+
+        <div class="highlight-box">
+          Recording Full Name, email, IP address, exact timestamp, and confirmation of consent into an electronic register constitutes a valid digital footprint with the legal status of a Simple Electronic Signature.
+        </div>
+
+        <div class="party-block">
+          <h3>Also included: Terms of Service</h3>
+          <p>MindEcho AI is provided strictly for educational, informational, and entertainment purposes. It is <b>NOT</b> a medical, clinical, psychological, or psychiatric service. It does not provide diagnoses or substitute professional advice.</p>
+          <p style="margin-top:8px">You accept full responsibility for implementing any recommendations, meditations, or generated content. You warrant legal rights over any voice data uploaded.</p>
+          <p style="margin-top:8px">To the maximum extent permitted by law, <b>Konstantyn Shlomovich and MindEcho AI</b> shall not be liable for any direct, indirect, incidental, or consequential damages.</p>
+          <p style="margin-top:8px">This Agreement shall remain in full force and effect <b>indefinitely</b> for the entire duration of your use of the Service.</p>
+        </div>
+      </div>
+
+    </div><!-- /nda-scroll -->
+
+    <div class="scroll-hint" id="scrollHint">
+      ↓ Прокрутите документ до конца / Scroll to the bottom ↓
+    </div>
+
+    <div class="scroll-check">
+      <input type="checkbox" id="readCheck" disabled>
+      <label for="readCheck"><b>Я прочёл(а) и принимаю условия NDA и Пользовательского соглашения / I have read and accept the NDA and Terms of Service.</b><br>Подтверждаю, что вся информация, переданная мне, является конфиденциальной.</label>
+    </div>
+
+    <button class="btn-primary" id="btn1" onclick="goToStep2()" disabled>
+      Продолжить к подписанию →
+    </button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 2: Fill form & Sign
+  ══════════════════════════════════════ -->
+  <div class="screen" id="step2">
+    <div style="margin-bottom:20px">
+      <div class="section-title">Данные и подпись</div>
+      <div class="section-sub">Your details & Signature • Введите ваши данные и распишитесь</div>
+    </div>
+
+    <div class="form-row two">
+      <div class="field">
+        <label>Ваше ФИО / Full Name *</label>
+        <input type="text" id="fullName" placeholder="Иванов Иван / John Smith" required>
+      </div>
+      <div class="field">
+        <label>Email *</label>
+        <input type="email" id="emailField" placeholder="example@email.com" required>
+      </div>
+    </div>
+
+    <div class="canvas-label">Подпись пальцем или мышкой / Sign below *</div>
+    <div class="canvas-wrap">
+      <canvas id="signatureCanvas"></canvas>
+    </div>
+    <div class="canvas-footer">
+      <span style="font-size:.75rem;color:var(--muted)">Распишитесь в поле выше / Sign above</span>
+      <button class="btn-clear" id="btnClear" onclick="clearCanvas()">✕ Очистить / Clear</button>
+    </div>
+
+    <div id="statusBox" class="status-box"></div>
+
+    <button class="btn-primary" id="btnSubmit" onclick="submitSignature()">
+      <div class="spinner" id="spinner"></div>
+      <span id="btnTxt">✅ Подписать и продолжить / Sign & Continue</span>
+    </button>
+
+    <button class="btn-outline" onclick="goToStep1()">← Вернуться к тексту / Back</button>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       STEP 3: Success
+  ══════════════════════════════════════ -->
+  <div class="screen" id="step3">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <div>
+        <div class="success-title">Подписано! / Signed!</div>
+        <div style="font-size:.82rem;color:var(--accent);margin-top:4px" id="signerName"></div>
+      </div>
+      <div class="success-sub">
+        Ваш подписанный документ сохранён на Google Диске.<br>
+        Your signed NDA has been saved to Google Drive.<br><br>
+        Нажмите ниже, чтобы открыть следующий документ о <b>MindEcho AI</b>:
+      </div>
+      <a href="<?= nextDocUrl ?>" target="_blank" class="btn-next">
+        🚀 Открыть документ MindEcho AI
+      </a>
+      <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Open MindEcho AI document</div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ─── State ───
+let hasSigned    = false;
+let hasScrolled  = false;
+let currentLang  = 'ru';
+const nextDocUrl = '<?= nextDocUrl ?>';
+
+// ─── Language switch ───
+function switchLang(lang) {
+  currentLang = lang;
+  document.getElementById('langRU').style.display = lang === 'ru' ? '' : 'none';
+  document.getElementById('langEN').style.display = lang === 'en' ? '' : 'none';
+  document.getElementById('tabRU').classList.toggle('active', lang === 'ru');
+  document.getElementById('tabEN').classList.toggle('active', lang === 'en');
+  // Reset scroll check when switching language
+  const box = document.getElementById('ndaScroll');
+  box.scrollTop = 0;
+  hasScrolled = false;
+  updateScrollState();
+}
+
+// ─── Scroll detection ───
+function updateScrollState() {
+  const box   = document.getElementById('ndaScroll');
+  const ratio = box.scrollTop / (box.scrollHeight - box.clientHeight);
+  if (ratio > 0.92) {
+    hasScrolled = true;
+    document.getElementById('scrollHint').classList.add('hidden');
+    document.getElementById('readCheck').disabled = false;
+  }
+  updateBtn1();
+}
+
+function updateBtn1() {
+  const checked = document.getElementById('readCheck').checked;
+  document.getElementById('btn1').disabled = !(hasScrolled && checked);
+}
+
+document.getElementById('ndaScroll').addEventListener('scroll', updateScrollState);
+document.getElementById('readCheck').addEventListener('change', updateBtn1);
+
+// ─── Navigation ───
+function goToStep2() {
+  document.getElementById('step1').classList.remove('active');
+  document.getElementById('step2').classList.add('active');
+  document.getElementById('pill1').className = 'step-pill done';
+  document.getElementById('pill2').className = 'step-pill active';
+  document.getElementById('progressBar').style.width = '66%';
+  setTimeout(resizeCanvas, 80);
+}
+
+function goToStep1() {
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step1').classList.add('active');
+  document.getElementById('pill1').className = 'step-pill active';
+  document.getElementById('pill2').className = 'step-pill';
+  document.getElementById('progressBar').style.width = '33%';
+}
+
+function goToStep3(fullName) {
+  document.getElementById('step2').classList.remove('active');
+  document.getElementById('step3').classList.add('active');
+  document.getElementById('pill2').className = 'step-pill done';
+  document.getElementById('pill3').className = 'step-pill done';
+  document.getElementById('progressBar').style.width = '100%';
+  document.getElementById('signerName').textContent = fullName;
+}
+
+// ─── Canvas signature ───
+const canvas = document.getElementById('signatureCanvas');
+const ctx    = canvas.getContext('2d');
+let drawing  = false;
+
+function resizeCanvas() {
+  const ratio = Math.max(window.devicePixelRatio || 1, 1);
+  const rect  = canvas.getBoundingClientRect();
+  const saved = canvas.toDataURL();
+  canvas.width  = rect.width  * ratio;
+  canvas.height = rect.height * ratio;
+  ctx.scale(ratio, ratio);
+  ctx.lineWidth   = 2.8;
+  ctx.lineCap     = 'round';
+  ctx.lineJoin    = 'round';
+  ctx.strokeStyle = '#1a1a2e';
+  // Restore drawn signature after resize
+  if (hasSigned) {
+    const img = new Image();
+    img.onload = () => ctx.drawImage(img, 0, 0, rect.width, rect.height);
+    img.src = saved;
+  }
+}
+
+function getXY(e) {
+  const r = canvas.getBoundingClientRect();
+  if (e.touches && e.touches.length) {
+    return { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top };
+  }
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+
+canvas.addEventListener('mousedown',  e => { drawing = true; hasSigned = true; ctx.beginPath(); const p=getXY(e); ctx.moveTo(p.x,p.y); });
+canvas.addEventListener('mousemove',  e => { if (!drawing) return; const p=getXY(e); ctx.lineTo(p.x,p.y); ctx.stroke(); });
+canvas.addEventListener('mouseup',    () => drawing = false);
+canvas.addEventListener('mouseleave', () => drawing = false);
+canvas.addEventListener('touchstart', e => { e.preventDefault(); drawing=true; hasSigned=true; ctx.beginPath(); const p=getXY(e); ctx.moveTo(p.x,p.y); }, {passive:false});
+canvas.addEventListener('touchmove',  e => { e.preventDefault(); if (!drawing) return; const p=getXY(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }, {passive:false});
+canvas.addEventListener('touchend',   () => drawing = false);
+
+function clearCanvas() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  hasSigned = false;
+}
+
+window.addEventListener('resize', resizeCanvas);
+setTimeout(resizeCanvas, 100);
+
+// ─── Submit ───
+function submitSignature() {
+  const fullName = document.getElementById('fullName').value.trim();
+  const email    = document.getElementById('emailField').value.trim();
+
+  if (!fullName) { showStatus('err', 'Введите ваше ФИО / Please enter your full name.'); return; }
+  if (!email || !email.includes('@')) { showStatus('err', 'Введите корректный email / Enter a valid email.'); return; }
+  if (!hasSigned) { showStatus('err', 'Пожалуйста, поставьте подпись / Please sign in the field above.'); return; }
+
+  // Loading state
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  document.getElementById('spinner').style.display = 'block';
+  document.getElementById('btnTxt').textContent = 'Сохранение...';
+  document.getElementById('statusBox').style.display = 'none';
+
+  const payload = {
+    fullName:        fullName,
+    email:           email,
+    signatureBase64: canvas.toDataURL('image/png'),
+    nextDocUrl:      nextDocUrl
+  };
+
+  google.script.run
+    .withSuccessHandler(function(res) {
+      if (res.success) {
+        goToStep3(fullName);
+      } else {
+        btn.disabled = false;
+        document.getElementById('spinner').style.display = 'none';
+        document.getElementById('btnTxt').textContent = '✅ Подписать и продолжить / Sign & Continue';
+        showStatus('err', 'Ошибка: ' + res.error);
+      }
+    })
+    .withFailureHandler(function(err) {
+      btn.disabled = false;
+      document.getElementById('spinner').style.display = 'none';
+      document.getElementById('btnTxt').textContent = '✅ Подписать и продолжить / Sign & Continue';
+      showStatus('err', 'Ошибка сервера: ' + err.message);
+    })
+    .processSignature(payload);
+}
+
+function showStatus(type, msg) {
+  const box = document.getElementById('statusBox');
+  box.className = 'status-box ' + (type === 'ok' ? 'status-ok' : 'status-err');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
