@@ -714,29 +714,38 @@ async function submitSign() {
     // Auto-trigger download on user's device
     pdf.save(generatedFileName);
 
-  } catch(pdfErr) {
-    console.error('PDF Generation Error:', pdfErr);
-  }
+    // Convert PDF to Base64 for Google Apps Script
+    const pdfBase64 = pdf.output('datauristring').split(',')[1];
 
-  // 4. Send Email Notification via EmailJS (Clean text parameters, no broken HTML/attachments)
-  document.getElementById('btnTxt').textContent='Отправка уведомления...';
+    // Send PDF to Google Apps Script Endpoint (Saves to Drive & Emails PDF Attachment)
+    document.getElementById('btnTxt').textContent = 'Отправка документа на email...';
+    
+    const gasUrl = 'https://script.google.com/macros/s/AKfycbziOn0HCDEMob1kzHkwJkj__zOFNnFHRL-iA7UFByz0YRS2JXouAcCXz1XdiGP240o1VA/exec';
 
-  const params = {
-    signer_name:  name,
-    signer_email: email,
-    sign_date:    dateStr,
-    sign_id:      signId
-  };
-
-  emailjs.send(EJSVC, EJSTPL, params)
+    fetch(gasUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        signerName:  name,
+        signerEmail: email,
+        dateStr:     dateStr,
+        signId:      signId,
+        fileName:    generatedFileName,
+        pdfBase64:   pdfBase64
+      })
+    })
     .then(() => {
       goStep3(name);
     })
     .catch(err => {
-      console.error('Email Notification Error:', err);
-      // Proceed anyway since PDF was created and downloaded
+      console.error('GAS Endpoint Error:', err);
       goStep3(name);
     });
+
+  } catch(pdfErr) {
+    console.error('PDF Generation Error:', pdfErr);
+    goStep3(name);
+  }
 }
 
 function showStatus(type, msg) {
